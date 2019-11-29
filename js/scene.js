@@ -1,5 +1,5 @@
 import * as util from './util.js';
-import * as wasm from '../pkg/wasm_raytracer.js';
+import { Scene } from '../pkg/wasm_raytracer.js';
 
 var spheres = [];
 var minRadius = 5;
@@ -34,6 +34,7 @@ export function redraw() {
   for (var i = 0; i < spheres.length; i++) {
     drawSphere(spheres[i]);
   }
+  //scene.render();
 }
 export function makeSphere(pos) {
   spheres.push({"x": pos.x,

@@ -19,32 +19,64 @@ extern {
 
 #[wasm_bindgen(start)]
 pub fn main() -> Result<(), JsValue> {
-  let window = web_sys::window().expect("no global `window` exists");
-  let document = window.document().expect("should have a document on window");
-  let body = document.body().expect("document should have a body");
-
-  let canvas = document.get_element_by_id("scene").expect("document should havea canvas named scene");
-  let canvas = canvas.dyn_into::<web_sys::HtmlCanvasElement>().expect("");
-
-  let context = canvas.get_context("2d").unwrap().unwrap().dyn_into::<web_sys::CanvasRenderingContext2d>().unwrap();
-  let fill_style = JsValue::from_str("#000000");
-  context.set_fill_style(&fill_style);
-  context.fill_rect(0.0,0.0,10.0,10.0);
-
-  //let val = document.create_element("p")?;
-  //val.set_inner_html("hello from rust");
-
-  //body.append_child(&val)?;
-
+  //let scene = Scene::new();
+  //scene.render();
   Ok(())
 }
 
+//#[wasm_bindgen]
+//struct Color {
+//  r: u8, g: u8, b: u8
+//}
+//
+//#[wasm_bindgen]
+//struct Point {
+//  x: f64, y: f64, z: f64
+//}
+//
+//pub struct Sphere {
+//  center: Point,
+//  radius: f64,
+//  color: Color,
+//}
+
 #[wasm_bindgen]
-pub fn add(a: u32, b: u32) -> u32 {
-  a + b
+pub fn add() {
 }
 
 #[wasm_bindgen]
-pub fn print_sphere(idx: i32) {
-  alert(&idx.to_string());
+pub struct Scene {
+  canvas: web_sys::HtmlCanvasElement,
+  //spheres: Vec<Sphere>,
+  //bg: color,
+}
+
+#[wasm_bindgen]
+impl Scene {
+  pub fn new() -> Scene {
+    let window = web_sys::window().expect("no global `window` exists");
+    let document = window.document().expect("should have a document on window");
+
+    let canvas = document.get_element_by_id("scene")
+                         .expect("document should havea canvas named scene")
+                         .dyn_into::<web_sys::HtmlCanvasElement>()
+                         .expect("");
+    //let spheres = Vec::new();
+    Scene {
+      canvas,
+      //spheres,
+    }
+  }
+  pub fn render(&self) {
+    let context = self.canvas.get_context("2d")
+                        .unwrap()
+                        .unwrap()
+                        .dyn_into::<web_sys::CanvasRenderingContext2d>()
+                        .unwrap();
+    let fill_style = JsValue::from_str("#0000FF");
+    let width = self.canvas.width();
+    let height = self.canvas.height();
+    context.set_fill_style(&fill_style);
+    context.fill_rect(0.0, 0.0, width.into(), height.into());
+  }
 }
