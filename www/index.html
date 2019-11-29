@@ -1,0 +1,24 @@
+<html>
+  <head>
+    <title>WebAssembly raytracer</title>
+  </head>
+
+  <body>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script type="module">
+      import init, { add } from '../pkg/wasm_raytracer.js';
+      async function run() {
+        await init();
+        const result = add(1, 2);
+        console.log(`1 + 2 = ${result}`);
+        if (result !== 3)
+          throw new Error("wasm addition doesn't work");
+      }
+      run();
+    </script>
+
+    <h1>WebAssembly raytracer</h1>
+    <canvas id="scene" width="320" height="240" style="border:1px solid #c3c3c3;"></canvas>
+    <script type="module" src="../js/main.js"></script>
+  </body>
+</html>
