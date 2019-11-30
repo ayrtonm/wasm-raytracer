@@ -11,6 +11,10 @@ async function run() {
   const scene = Scene.new();
   scene.render();
   const memory = wasm.memory;
+  const ptr = scene.spheres();
+  console.log(ptr);
+  const spheres = new Uint8Array(memory.buffer, ptr, 100);
+  console.log(spheres);
   //$(document).ready(function() {
   //  $(canvasSelector).mousedown(
   //    function(evt) {

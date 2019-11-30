@@ -112,6 +112,9 @@ impl Scene {
       context.stroke();
     }
   }
+  pub fn spheres(&self) -> *const Sphere {
+    self.spheres.as_ptr()
+  }
   //pub fn makeSphere(&mut self, center: &Point) {
   //  let mut rng = rand::thread_rng();
   //  let radius: f64 = rng.gen();
