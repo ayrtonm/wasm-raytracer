@@ -5,7 +5,6 @@ extern crate wasm_bindgen;
 
 use sphere::*;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -24,25 +23,34 @@ type dim = usize;
 pub struct Scene {
   wx: dim,
   wy: dim,
+  eye: Point,
+  top_left: Point,
+  horizontal: Point,
+  vertical: Point,
   spheres: Vec<Sphere>,
-  bg: Color,
   framebuffer: Vec<u8>,
+  bgColor: Color,
 }
 
 #[wasm_bindgen]
 impl Scene {
   pub fn new(wx: dim, wy: dim) -> Scene {
-    let mut spheres = Vec::new();
-    spheres.push(Sphere::new(Point::new(1.0, 1.0, 0.0),
-                             5.0,
-                             Color::new(255, 0, 0, 0)));
-    let bg = Color::new(0,255,255,0);
+    let spheres = Vec::new();
+    let eye = Point::origin();
+    let top_left = Point::new(-2.0,-1.0,-2.0);
+    let horizontal = Point::new(4.0, 0.0, 0.0);
+    let vertical = Point::new(0.0, 4.0, 0.0);
     let framebuffer = vec![0; (wx*wy*4).into()];
+    let bgColor = Color::new(0, 0, 255, 255);
     Scene {
       wx, wy,
+      eye,
+      top_left,
+      horizontal,
+      vertical,
       spheres,
-      bg,
       framebuffer,
+      bgColor,
     }
   }
   fn set_framebuffer(&mut self, x: usize, y: usize, color: Color) {
@@ -57,21 +65,20 @@ impl Scene {
     let blue = Color::new(0, 0, 255, 255);
     for y in 0..self.wy {
       for x in 0..self.wx {
-        match self.hit_sphere(x as f64,y as f64) {
-          Some(snum) => {
-            self.set_framebuffer(x, y, red);
-          }
-          None => {
-            self.set_framebuffer(x, y, blue);
-          }
-        }
+        let u = (x / self.wx) as f64;
+        let v = (y / self.wy) as f64;
+        let r = Ray::new(self.eye, self.top_left.add(
+                                   self.horizontal.mult(u).add(
+                                   self.vertical.mult(v))));
+        let col = self.hit_sphere(r);
+        self.set_framebuffer(x, y, col);
       }
     }
   }
   pub fn make_sphere(&mut self, x: f64, y: f64, z: f64, radius: f64) {
     self.spheres.push(Sphere::new(Point::new(x, y, z),
                                   radius,
-                                  Color::new(255, 0, 0, 0)));
+                                  Color::new(255, 0, 0, 255)));
   }
   pub fn move_sphere(&mut self, idx: usize, x: f64, y: f64) {
     self.spheres[idx].set_center(x,y);
@@ -79,17 +86,20 @@ impl Scene {
   pub fn delete_sphere(&mut self, idx: usize) {
     self.spheres.remove(idx);
   }
-  pub fn hit_sphere(&self, px: f64, py: f64) -> Option<usize> {
-    self.spheres.iter().position(|&s| {
-      let cx = s.center().x();
-      let cy = s.center().y();
-      let rsq = s.radius().powi(2);
-      let dx = cx - px;
-      let dy = cy - py;
-      dx.powi(2) + dy.powi(2) < rsq
-    })
+  fn normal_to_color(n: Point) -> Color {
+    let m = n.shift(1.0).mult(0.5).mult(255.99);
+    alert(&m.x().to_string());
+    Color::new(m.x() as u8, m.y() as u8, m.z() as u8, 255)
+  }
+  pub fn hit_sphere(&self, ray: Ray) -> Color {
+    match self.spheres.iter().find_map(|&s| s.intersect(ray)) {
+      Some(tup) => Scene::normal_to_color(tup.0.normal(ray.value(tup.1))),
+      None => self.bgColor,
+    }
   }
   pub fn framebuffer(&self) -> *const u8 { self.framebuffer.as_ptr() }
   pub fn sphere(&self, idx: usize) -> Sphere { self.spheres[idx] }
-  pub fn sphere_count(&self) -> usize { self.spheres.len() - 1 }
+  pub fn sphere_count(&self) -> usize {
+    self.spheres.len()
+  }
 }
