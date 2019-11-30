@@ -103,17 +103,14 @@ impl Sphere {
   pub fn center(&self) -> Point { self.center }
   pub fn radius(&self) -> f64 { self.radius }
   pub fn color(&self) -> Color { self.color }
-}
-
-impl Sphere {
-  pub fn intersect(&self, r: Ray) -> Option<(Sphere, f64)> {
+  pub fn intersect(&self, r: Ray) -> Option<(f64)> {
     let a: f64 = r.direction().dot(r.direction());
     let dr: Point = r.origin().sub(self.center);
     let b: f64 = 2.0 * r.direction().dot(dr);
     let c: f64 = dr.dot(dr) - self.radius.powi(2);
     let discriminant: f64 = b.powi(2) - 4.0*a*c;
     if discriminant > 0.0 {
-      Some((*self, -(b + discriminant.sqrt()) / (a * 2.0)))
+      Some(-(b + discriminant.sqrt()) / (a * 2.0))
     } else {
       None
     }
