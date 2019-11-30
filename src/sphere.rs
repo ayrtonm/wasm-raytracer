@@ -40,6 +40,9 @@ impl Point {
   pub fn norm(&self) -> f64 {
     (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
   }
+  pub fn normalize(&self) -> Point {
+    self.mult(1.0/self.norm())
+  }
   pub fn add(&self, other: Point) -> Point {
     Point {
       x: self.x + other.x(),
@@ -104,7 +107,7 @@ impl Sphere {
   pub fn center(&self) -> Point { self.center }
   pub fn radius(&self) -> f64 { self.radius }
   pub fn color(&self) -> Color { self.color }
-  pub fn intersect(&self, r: Ray) -> Option<(f64)> {
+  pub fn intersect(&self, r: Ray) -> Option<f64> {
     let a: f64 = dot(r.direction(), r.direction());
     let dr: Point = r.origin().sub(self.center);
     let b: f64 = 2.0 * dot(r.direction(), dr);
@@ -117,7 +120,6 @@ impl Sphere {
     }
   }
   pub fn normal(&self, p: Point) -> Point {
-    let n = p.sub(self.center);
-    n.mult(1.0/n.norm())
+    p.sub(self.center).normalize()
   }
 }
