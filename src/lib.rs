@@ -60,13 +60,13 @@ impl Scene {
     for y in 0..self.wy {
       for x in 0..self.wx {
         match self.hit_sphere(x as f64,y as f64) {
-          Some(idx) => {
+          Some(snum) => {
             //set red
             let idx = (x + (y * self.wx)) * 4;
             self.framebuffer[idx as usize] = 0xff;
             self.framebuffer[(idx + 1) as usize] = 0x00;
             self.framebuffer[(idx + 2) as usize] = 0x00;
-            self.framebuffer[(idx + 3) as usize] = 0x00;
+            self.framebuffer[(idx + 3) as usize] = 0xff;
           }
           None => {
             //set blue
@@ -74,7 +74,7 @@ impl Scene {
             self.framebuffer[idx as usize] = 0x00;
             self.framebuffer[(idx + 1) as usize] = 0x00;
             self.framebuffer[(idx + 2) as usize] = 0xff;
-            self.framebuffer[(idx + 3) as usize] = 0x00;
+            self.framebuffer[(idx + 3) as usize] = 0xff;
           }
         }
       }
