@@ -1,13 +1,11 @@
 mod utils;
 mod sphere;
 
-extern crate rand;
 extern crate wasm_bindgen;
 
 use sphere::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
-use rand::Rng;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -31,15 +29,6 @@ pub struct Scene {
   framebuffer: Vec<u8>,
 }
 
-//fn rand_color() -> Color {
-//  let mut rng = rand::thread_rng();
-//  let r: u8 = rng.gen();
-//  let g: u8 = rng.gen();
-//  let b: u8 = rng.gen();
-//  let a: u8 = rng.gen();
-//  Color { r, g, b, a }
-//}
-
 #[wasm_bindgen]
 impl Scene {
   pub fn new(wx: dim, wy: dim) -> Scene {
@@ -56,25 +45,24 @@ impl Scene {
       framebuffer,
     }
   }
+  fn set_framebuffer(&mut self, x: usize, y: usize, color: Color) {
+    let idx = (x + (y * self.wx)) * 4;
+    self.framebuffer[idx] = color.r();
+    self.framebuffer[idx + 1] = color.g();
+    self.framebuffer[idx + 2] = color.b();
+    self.framebuffer[idx + 3] = color.a();
+  }
   pub fn render(&mut self) {
+    let red = Color::new(255, 0, 0, 255);
+    let blue = Color::new(0, 0, 255, 255);
     for y in 0..self.wy {
       for x in 0..self.wx {
         match self.hit_sphere(x as f64,y as f64) {
           Some(snum) => {
-            //set red
-            let idx = (x + (y * self.wx)) * 4;
-            self.framebuffer[idx as usize] = 0xff;
-            self.framebuffer[(idx + 1) as usize] = 0x00;
-            self.framebuffer[(idx + 2) as usize] = 0x00;
-            self.framebuffer[(idx + 3) as usize] = 0xff;
+            self.set_framebuffer(x, y, red);
           }
           None => {
-            //set blue
-            let idx = (x + (y * self.wx)) * 4;
-            self.framebuffer[idx as usize] = 0x00;
-            self.framebuffer[(idx + 1) as usize] = 0x00;
-            self.framebuffer[(idx + 2) as usize] = 0xff;
-            self.framebuffer[(idx + 3) as usize] = 0xff;
+            self.set_framebuffer(x, y, blue);
           }
         }
       }
