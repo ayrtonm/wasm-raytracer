@@ -12,7 +12,10 @@ async function run() {
 
   //initialize and draw the scene
   const scene = Scene.new();
-  redraw(scene);
+  const fbPtr = scene.framebuffer();
+  const framebuffer = new Uint8ClampedArray(memory.buffer, fbPtr, 320*240*4);
+  redraw(scene, framebuffer);
+
 
   $(document).ready(function() {
     $(canvasSelector).mousedown(
@@ -20,11 +23,11 @@ async function run() {
         var mousePos = util.getMousePos(evt);
         grabbingSphere = hitSphere(scene, mousePos);
         if (!grabbingSphere) {
-          grabbingSphere = makeSphere(scene, mousePos);
+          grabbingSphere = makeSphere(scene, framebuffer, mousePos);
         }
         else {
           if (evt.which == 2) {
-            deleteSphere(scene, grabbingSphere);
+            deleteSphere(scene, framebuffer, grabbingSphere);
             grabbingSphere = false;
           }
         }
@@ -40,7 +43,7 @@ async function run() {
       function(evt) {
         if (grabbingSphere) {
           var mousepos = util.getMousePos(evt);
-          moveSphere(scene, grabbingSphere, mousepos);
+          moveSphere(scene, framebuffer, grabbingSphere, mousepos);
         }
       });
   });

@@ -21,16 +21,17 @@ extern {
     fn alert(s: &str);
 }
 
-#[wasm_bindgen(start)]
-pub fn main() -> Result<(), JsValue> {
-  Ok(())
-}
+//#[wasm_bindgen(start)]
+//pub fn main() -> Result<(), JsValue> {
+//  Ok(())
+//}
 
 #[wasm_bindgen]
 pub struct Scene {
   canvas: web_sys::HtmlCanvasElement,
   spheres: Vec<Sphere>,
   bg: Color,
+  framebuffer: Vec<u32>,
 }
 
 //fn rand_color() -> Color {
@@ -57,13 +58,60 @@ impl Scene {
                              5.0,
                              Color::new(255, 0, 0, 0)));
     let bg = Color::new(0,255,255,0);
+    let framebuffer = vec![0; 320*240];
     Scene {
       canvas,
       spheres,
       bg,
+      framebuffer,
     }
   }
-  pub fn render(&self) {
+  pub fn render(&mut self) {
+    let wy = self.canvas.height();
+    let wx = self.canvas.width();
+    for y in 0..wy {
+      for x in 0..wx {
+        match self.hit_sphere(x.into(),y.into()) {
+          Some(idx) => {
+            //set red
+            let idx = x + (y * wx);
+            self.framebuffer[idx as usize] = 0xff << 24;
+          }
+          None => {
+            //set blue
+            let idx = x + (y * wx);
+            self.framebuffer[idx as usize] = 0xff << 8;
+          }
+        }
+        //draw
+      }
+    }
+  }
+  pub fn render_semidirect(&self) {
+    let context = self.canvas.get_context("2d")
+                        .unwrap()
+                        .unwrap()
+                        .dyn_into::<web_sys::CanvasRenderingContext2d>()
+                        .unwrap();
+    let blue = JsValue::from_str("#0000FF");
+    let red = JsValue::from_str("#FF0000");
+    let wy = self.canvas.height();
+    let wx = self.canvas.width();
+    for y in 0..wy {
+      for x in 0..wx {
+        match self.hit_sphere(x.into(),y.into()) {
+          Some(idx) => {
+            context.set_fill_style(&red);
+          }
+          None => {
+            context.set_fill_style(&blue);
+          }
+        }
+        context.fill_rect(x.into(), y.into(), 1.0, 1.0);
+      }
+    }
+  }
+  fn render_direct(&self) {
     let context = self.canvas.get_context("2d")
                         .unwrap()
                         .unwrap()
@@ -97,6 +145,17 @@ impl Scene {
   pub fn delete_sphere(&mut self, idx: usize) {
     self.spheres.remove(idx);
   }
+  pub fn hit_sphere(&self, px: f64, py: f64) -> Option<usize> {
+    self.spheres.iter().position(|&s| {
+      let cx = s.center().x();
+      let cy = s.center().y();
+      let rsq = s.radius().powi(2);
+      let dx = cx - px;
+      let dy = cy - py;
+      dx.powi(2) + dy.powi(2) < rsq
+    })
+  }
+  pub fn framebuffer(&self) -> *const u32 { self.framebuffer.as_ptr() }
   pub fn sphere(&self, idx: usize) -> Sphere { self.spheres[idx] }
   pub fn sphere_count(&self) -> usize { self.spheres.len() - 1 }
 }

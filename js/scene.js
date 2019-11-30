@@ -6,6 +6,7 @@ var minRadius = 5;
 var maxRadius = 20;
 var maxDepth = -2;
 var bgColor = "deepskyblue";
+var fgColor = "red";
 
 function colorToString(r, g, b) {
   var color = b + (g << 8) + (r << 16);
@@ -32,31 +33,38 @@ export function drawSphere(sphere) {
   util.ctx.strokeStyle = sphere.color;
   util.ctx.stroke();
 }
-export function redraw(scene) {
+export function redraw(scene, fb) {
   scene.render();
-  //var wx = util.canvas.width;
-  //var wy = util.canvas.height;
-  //util.ctx.fillStyle = bgColor;
+  var wx = util.canvas.width;
+  var wy = util.canvas.height;
+  let imageData = new ImageData(fb, wx, wy);
+  util.ctx.putImageData(imageData, 0, 0);
   //for (var x = 0; x < wx; x++) {
   //  for (var y = 0; y < wy; y++) {
+  //    if (fb[x + (y * wx)] == 1) {
+  //      util.ctx.fillStyle = fgColor;
+  //    }
+  //    else {
+  //      util.ctx.fillStyle = bgColor;
+  //    }
   //    util.ctx.fillRect(x, y, 1, 1);
   //  }
   //}
 }
-export function makeSphere(scene, pos) {
+export function makeSphere(scene, fb, pos) {
   scene.make_sphere(pos.x, pos.y,
                     Math.random()*maxDepth,
                     Math.random()*(maxRadius - minRadius) + minRadius);
-  redraw(scene);
+  redraw(scene, fb);
   return scene.sphere_count();
 }
-export function moveSphere(scene, idx, pos) {
+export function moveSphere(scene, fb, idx, pos) {
   scene.move_sphere(idx, pos.x, pos.y);
-  redraw(scene);
+  redraw(scene, fb);
 }
-export function deleteSphere(scene, idx) {
+export function deleteSphere(scene, fb, idx) {
   scene.delete_sphere(idx);
-  redraw(scene);
+  redraw(scene, fb);
 }
 export function hitSphere(scene, pos) {
   for (var i = 0; i < scene.sphere_count(); i++) {
