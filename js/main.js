@@ -11,7 +11,7 @@ async function run() {
   const memory = wasm.memory;
 
   //initialize and draw the scene
-  const scene = Scene.new();
+  const scene = Scene.new(util.canvas.width, util.canvas.height);
   const fbPtr = scene.framebuffer();
   const framebuffer = new Uint8ClampedArray(memory.buffer, fbPtr, 320*240*4);
   redraw(scene, framebuffer);
