@@ -99,7 +99,13 @@ impl Scene {
   pub fn hit_sphere(&self, ray: Ray) -> Color {
     match self.spheres.iter().find(|&s| {
       match s.intersect(ray) {
-        Some(distance) => true,
+        Some(distance) => {
+          if distance > 0.0 {
+            true
+          } else {
+            false
+          }
+        },
         None => false,
       }
     }) {
