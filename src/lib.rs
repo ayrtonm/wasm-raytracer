@@ -95,14 +95,13 @@ impl Scene {
                         .unwrap()
                         .dyn_into::<web_sys::CanvasRenderingContext2d>()
                         .unwrap();
-    let fill_style = JsValue::from_str(&colorToString(0,0,0xff));
+    let fill_style = JsValue::from_str("#0000FF");
     let width = self.canvas.width();
     let height = self.canvas.height();
     context.set_fill_style(&fill_style);
     context.fill_rect(0.0, 0.0, width.into(), height.into());
 
     for s in &self.spheres {
-      alert(&self.spheres.len().to_string());
       let color = JsValue::from_str("#FF0000");
       context.begin_path();
       context.arc(s.center.x, s.center.y, s.radius, 0.0, 2.0 * std::f64::consts::PI).unwrap();

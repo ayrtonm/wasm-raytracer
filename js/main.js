@@ -7,9 +7,10 @@ var canvasSelector = "#" + util.canvasName;
 
 async function run() {
   //initialize WebAssembly module
-  await init();
+  const wasm = await init();
   const scene = Scene.new();
   scene.render();
+  const memory = wasm.memory;
   //$(document).ready(function() {
   //  $(canvasSelector).mousedown(
   //    function(evt) {
