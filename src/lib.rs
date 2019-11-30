@@ -14,11 +14,11 @@ use rand::Rng;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-//import functions from scene.js
-#[link(wasm_import_module = "scene")]
-extern {
-    fn colorToString(r: u8, g: u8, b: u8) -> String;
-}
+////import functions from scene.js
+//#[link(wasm_import_module = "scene")]
+//extern {
+//    fn colorToString(r: u8, g: u8, b: u8) -> String;
+//}
 #[wasm_bindgen]
 extern {
     fn alert(s: &str);
@@ -62,6 +62,25 @@ fn rand_color() -> Color {
   let g: u8 = rng.gen();
   let b: u8 = rng.gen();
   Color { r, g, b }
+}
+
+#[wasm_bindgen]
+impl Color {
+  pub fn r(&self) -> u8 { self.r }
+  pub fn g(&self) -> u8 { self.g }
+  pub fn b(&self) -> u8 { self.b }
+}
+#[wasm_bindgen]
+impl Point {
+  pub fn x(&self) -> f64 { self.x }
+  pub fn y(&self) -> f64 { self.y }
+  pub fn z(&self) -> f64 { self.z }
+}
+#[wasm_bindgen]
+impl Sphere {
+  pub fn center(&self) -> Point { self.center }
+  pub fn radius(&self) -> f64 { self.radius }
+  pub fn color(&self) -> Color { self.color }
 }
 
 #[wasm_bindgen]
@@ -112,30 +131,8 @@ impl Scene {
       context.stroke();
     }
   }
+  pub fn sphere(&self, idx: usize) -> Sphere { self.spheres[idx] }
   pub fn spheres(&self) -> *const Sphere {
     self.spheres.as_ptr()
   }
-  //pub fn makeSphere(&mut self, center: &Point) {
-  //  let mut rng = rand::thread_rng();
-  //  let radius: f64 = rng.gen();
-  //  let color = rand_color();
-  //  self.spheres.push(Sphere { center: *center, radius, color } );
-  //  self.render();
-  //}
-  //pub fn deleteSphere(&mut self, idx: usize) {
-  //  self.spheres.remove(idx);
-  //  self.render();
-  //}
-  //pub fn moveSphere(&mut self, idx: usize, center: &Point) {
-  //  self.spheres[idx].center = *center;
-  //  self.render();
-  //}
-  //pub fn hitSphere(&self, pos: &Point) -> usize {
-  //  0
-  //  //for s in &self.spheres {
-  //  //  if s.x <= pos.x + s.radius && s.x >= pos.x - s.radius &&
-  //  //     s.y <= pos.y + s.radius && s.y >= pos.y - s.radius {
-  //  //       return i;
-  //  //}
-  //}
 }
