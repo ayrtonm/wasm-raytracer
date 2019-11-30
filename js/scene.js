@@ -29,12 +29,13 @@ export function drawSphere(sphere) {
   util.ctx.stroke();
 }
 export function redraw() {
-  util.ctx.fillStyle = bgColor;
-  util.ctx.fillRect(0, 0, util.canvas.width, util.canvas.height);
+  const x = Scene.new();
+  x.render();
+  //util.ctx.fillStyle = bgColor;
+  //util.ctx.fillRect(0, 0, util.canvas.width, util.canvas.height);
   for (var i = 0; i < spheres.length; i++) {
     drawSphere(spheres[i]);
   }
-  //scene.render();
 }
 export function makeSphere(pos) {
   spheres.push({"x": pos.x,

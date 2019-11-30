@@ -1,5 +1,5 @@
-export var canvasname = "scene";
-export var canvas = document.getElementById(canvasname);
+export var canvasName = "scene";
+export var canvas = document.getElementById(canvasName);
 export var ctx = canvas.getContext("2d");
 
 export function getMousePos(evt) {
