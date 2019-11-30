@@ -1,5 +1,4 @@
 import * as util from './util.js';
-import { Scene } from '../pkg/wasm_raytracer.js';
 
 var spheres = [];
 var minRadius = 5;
@@ -7,10 +6,7 @@ var maxRadius = 20;
 var maxDepth = -2;
 var bgColor = "deepskyblue";
 
-function randColor() {
-  var r = Math.trunc(Math.random() * 256);
-  var g = Math.trunc(Math.random() * 256);
-  var b = Math.trunc(Math.random() * 256);
+function colorToString(r, g, b) {
   var color = b + (g << 8) + (r << 16);
   var colorString = color.toString(16);
   var slen = colorString.length;
@@ -18,6 +14,13 @@ function randColor() {
     colorString = "0" + colorString;
   }
   return "#" + colorString;
+}
+
+function randColor() {
+  var r = Math.trunc(Math.random() * 256);
+  var g = Math.trunc(Math.random() * 256);
+  var b = Math.trunc(Math.random() * 256);
+  return colorToString(r,g,b);
 }
 export function drawSphere(sphere) {
   util.ctx.beginPath();
@@ -29,10 +32,8 @@ export function drawSphere(sphere) {
   util.ctx.stroke();
 }
 export function redraw() {
-  const x = Scene.new();
-  x.render();
-  //util.ctx.fillStyle = bgColor;
-  //util.ctx.fillRect(0, 0, util.canvas.width, util.canvas.height);
+  util.ctx.fillStyle = bgColor;
+  util.ctx.fillRect(0, 0, util.canvas.width, util.canvas.height);
   for (var i = 0; i < spheres.length; i++) {
     drawSphere(spheres[i]);
   }
