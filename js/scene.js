@@ -1,4 +1,5 @@
 import * as util from './util.js';
+import { Scene } from '../pkg/wasm_raytracer.js';
 
 var spheres = [];
 var minRadius = 5;
@@ -31,35 +32,39 @@ export function drawSphere(sphere) {
   util.ctx.strokeStyle = sphere.color;
   util.ctx.stroke();
 }
-export function redraw() {
-  util.ctx.fillStyle = bgColor;
-  util.ctx.fillRect(0, 0, util.canvas.width, util.canvas.height);
-  for (var i = 0; i < spheres.length; i++) {
-    drawSphere(spheres[i]);
-  }
+export function redraw(scene) {
+  scene.render();
+  //var wx = util.canvas.width;
+  //var wy = util.canvas.height;
+  //util.ctx.fillStyle = bgColor;
+  //for (var x = 0; x < wx; x++) {
+  //  for (var y = 0; y < wy; y++) {
+  //    util.ctx.fillRect(x, y, 1, 1);
+  //  }
+  //}
 }
-export function makeSphere(pos) {
-  spheres.push({"x": pos.x,
-                "y": pos.y,
-                "z": Math.random()*maxDepth,
-                "radius": Math.random()*(maxRadius - minRadius) + minRadius,
-                "color": randColor()});
-  redraw();
-  return spheres.length - 1;
+export function makeSphere(scene, pos) {
+  scene.make_sphere(pos.x, pos.y,
+                    Math.random()*maxDepth,
+                    Math.random()*(maxRadius - minRadius) + minRadius);
+  redraw(scene);
+  return scene.sphere_count();
 }
-export function moveSphere(idx, pos) {
-  spheres[idx].x = pos.x;
-  spheres[idx].y = pos.y;
-  redraw();
+export function moveSphere(scene, idx, pos) {
+  scene.move_sphere(idx, pos.x, pos.y);
+  redraw(scene);
 }
-export function deleteSphere(idx) {
-  spheres.splice(idx, 1);
-  redraw();
+export function deleteSphere(scene, idx) {
+  scene.delete_sphere(idx);
+  redraw(scene);
 }
-export function hitSphere(pos) {
-  for (var i = 0; i < spheres.length; i++) {
-    if (spheres[i].x <= pos.x + spheres[i].radius && spheres[i].x >= pos.x - spheres[i].radius &&
-        spheres[i].y <= pos.y + spheres[i].radius && spheres[i].y >= pos.y - spheres[i].radius) {
+export function hitSphere(scene, pos) {
+  for (var i = 0; i < scene.sphere_count(); i++) {
+    var s = scene.sphere(i);
+    var center = s.center();
+    var radius = s.radius();
+    if (center.x() <= pos.x + radius && center.x() >= pos.x - radius &&
+        center.y() <= pos.y + radius && center.y() >= pos.y - radius) {
       return i;
     }
   }

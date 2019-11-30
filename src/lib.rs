@@ -1,9 +1,11 @@
 mod utils;
+mod sphere;
 
 extern crate rand;
 extern crate web_sys;
 extern crate wasm_bindgen;
 
+use sphere::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use rand::Rng;
@@ -14,11 +16,6 @@ use rand::Rng;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-////import functions from scene.js
-//#[link(wasm_import_module = "scene")]
-//extern {
-//    fn colorToString(r: u8, g: u8, b: u8) -> String;
-//}
 #[wasm_bindgen]
 extern {
     fn alert(s: &str);
@@ -30,58 +27,20 @@ pub fn main() -> Result<(), JsValue> {
 }
 
 #[wasm_bindgen]
-#[derive(Clone, Copy)]
-pub struct Color {
-  r: u8, g: u8, b: u8
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Copy)]
-pub struct Point {
-  x: f64, y: f64, z: f64
-}
-
-#[wasm_bindgen]
-#[derive(Clone, Copy)]
-pub struct Sphere {
-  center: Point,
-  radius: f64,
-  color: Color,
-}
-
-#[wasm_bindgen]
 pub struct Scene {
   canvas: web_sys::HtmlCanvasElement,
   spheres: Vec<Sphere>,
-  //bg: Color,
+  bg: Color,
 }
 
-fn rand_color() -> Color {
-  let mut rng = rand::thread_rng();
-  let r: u8 = rng.gen();
-  let g: u8 = rng.gen();
-  let b: u8 = rng.gen();
-  Color { r, g, b }
-}
-
-#[wasm_bindgen]
-impl Color {
-  pub fn r(&self) -> u8 { self.r }
-  pub fn g(&self) -> u8 { self.g }
-  pub fn b(&self) -> u8 { self.b }
-}
-#[wasm_bindgen]
-impl Point {
-  pub fn x(&self) -> f64 { self.x }
-  pub fn y(&self) -> f64 { self.y }
-  pub fn z(&self) -> f64 { self.z }
-}
-#[wasm_bindgen]
-impl Sphere {
-  pub fn center(&self) -> Point { self.center }
-  pub fn radius(&self) -> f64 { self.radius }
-  pub fn color(&self) -> Color { self.color }
-}
+//fn rand_color() -> Color {
+//  let mut rng = rand::thread_rng();
+//  let r: u8 = rng.gen();
+//  let g: u8 = rng.gen();
+//  let b: u8 = rng.gen();
+//  let a: u8 = rng.gen();
+//  Color { r, g, b, a }
+//}
 
 #[wasm_bindgen]
 impl Scene {
@@ -94,18 +53,14 @@ impl Scene {
                          .dyn_into::<web_sys::HtmlCanvasElement>()
                          .expect("");
     let mut spheres = Vec::new();
-    spheres.push(Sphere {
-      center: Point {
-        x: 1.0, y: 1.0, z: 0.0
-      },
-      radius: 5.0,
-      color: Color {
-        r: 255, g: 0, b: 0
-      }
-    });
+    spheres.push(Sphere::new(Point::new(1.0, 1.0, 0.0),
+                             5.0,
+                             Color::new(255, 0, 0, 0)));
+    let bg = Color::new(0,255,255,0);
     Scene {
       canvas,
       spheres,
+      bg,
     }
   }
   pub fn render(&self) {
@@ -123,7 +78,7 @@ impl Scene {
     for s in &self.spheres {
       let color = JsValue::from_str("#FF0000");
       context.begin_path();
-      context.arc(s.center.x, s.center.y, s.radius, 0.0, 2.0 * std::f64::consts::PI).unwrap();
+      context.arc(s.center().x(), s.center().y(), s.radius(), 0.0, 2.0 * std::f64::consts::PI).unwrap();
       context.set_fill_style(&color);
       context.fill();
       context.set_line_width(1.0);
@@ -131,8 +86,17 @@ impl Scene {
       context.stroke();
     }
   }
-  pub fn sphere(&self, idx: usize) -> Sphere { self.spheres[idx] }
-  pub fn spheres(&self) -> *const Sphere {
-    self.spheres.as_ptr()
+  pub fn make_sphere(&mut self, x: f64, y: f64, z: f64, radius: f64) {
+    self.spheres.push(Sphere::new(Point::new(x, y, z),
+                                  radius,
+                                  Color::new(255, 0, 0, 0)));
   }
+  pub fn move_sphere(&mut self, idx: usize, x: f64, y: f64) {
+    self.spheres[idx].set_center(x,y);
+  }
+  pub fn delete_sphere(&mut self, idx: usize) {
+    self.spheres.remove(idx);
+  }
+  pub fn sphere(&self, idx: usize) -> Sphere { self.spheres[idx] }
+  pub fn sphere_count(&self) -> usize { self.spheres.len() - 1 }
 }
