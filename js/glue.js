@@ -45,9 +45,7 @@ export function deleteSphere(scene, fb, idx) {
 export function hitSphere(scene, pos) {
   var maybeIdx = scene.hit_sphere(pos.x, pos.y);
   if (maybeIdx > scene.sphere_count()) {
-    console.log("didn't hit anything");
     return false;
   }
-  console.log(maybeIdx);
   return maybeIdx;
 }

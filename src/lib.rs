@@ -40,9 +40,9 @@ impl Scene {
     let horizontal = Point::new(4.0, 0.0, 0.0);
     let vertical = Point::new(0.0, 4.0, 0.0);
     let framebuffer = vec![0; (wx*wy*4).into()];
-    //spheres.push(Sphere::new(Point::new(0.0, 0.0, -2.0), 0.5, Color::new(255,255,0,255)));
-    //spheres.push(Sphere::new(Point::new(1.0, 0.0, -2.0), 0.5, Color::new(0,255,255,255)));
-    //spheres.push(Sphere::new(Point::new(-1.0, 0.0, -2.0), 0.5, Color::new(255,0,255,255)));
+    spheres.push(Sphere::new(Point::new(0.0, 0.0, -2.0), 0.5, Color::new(255,255,0,255)));
+    spheres.push(Sphere::new(Point::new(1.0, 0.0, -2.0), 0.5, Color::new(0,255,255,255)));
+    spheres.push(Sphere::new(Point::new(-1.0, 0.0, -2.0), 0.5, Color::new(255,0,255,255)));
     Scene {
       wx, wy,
       eye,
