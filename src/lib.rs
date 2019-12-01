@@ -91,6 +91,9 @@ impl Scene {
   pub fn delete_sphere(&mut self, idx: usize) {
     self.spheres.remove(idx);
   }
+  //pub fn hit_sphere(&self) -> usize {
+  //  let distances = self.spheres.iter().map(|s| s.intersect(ray));
+  //}
   fn normal_to_color(n: Point) -> Color {
     let m = n.shift(1.0).mult(0.5).mult(255.99);
     Color::new(m.x() as u8, m.z() as u8, m.y() as u8, 255)

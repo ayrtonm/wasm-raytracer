@@ -37,6 +37,10 @@ impl Point {
   pub fn x(&self) -> f64 { self.x }
   pub fn y(&self) -> f64 { self.y }
   pub fn z(&self) -> f64 { self.z }
+  pub fn set(&mut self, x: f64, y: f64) {
+    self.x = x;
+    self.y = y;
+  }
   pub fn norm(&self) -> f64 {
     (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
   }
@@ -102,7 +106,7 @@ impl Sphere {
     Sphere { center, radius, color }
   }
   pub fn set_center(&mut self, x: f64, y: f64) {
-    self.center = Point::new(x, y, self.center.z);
+    self.center.set(x, y);
   }
   pub fn center(&self) -> Point { self.center }
   pub fn radius(&self) -> f64 { self.radius }

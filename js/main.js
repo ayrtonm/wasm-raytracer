@@ -17,6 +17,16 @@ async function run() {
   const fbPtr = scene.framebuffer();
   const framebuffer = new Uint8ClampedArray(memory.buffer, fbPtr, wx*wy*4);
   redraw(scene, framebuffer);
+  //setTimeout(function() {redraw(scene, framebuffer)}, 1000);
+  //setTimeout(function() {
+  //  scene.make_sphere(1,0,-1,0.5);
+  //  redraw(scene, framebuffer);
+  //  setTimeout(function() {
+  //    scene.move_sphere(3,-1,0);
+  //    //scene.delete_sphere(3);
+  //    redraw(scene, framebuffer);
+  //  }, 1000)
+  //}, 1000);
 
 
   $(document).ready(function() {

@@ -2,8 +2,8 @@ import * as util from './util.js';
 import { Scene } from '../pkg/wasm_raytracer.js';
 
 var spheres = [];
-var minRadius = 5;
-var maxRadius = 20;
+var minRadius = 0.1;
+var maxRadius = 0.5;
 var maxDepth = -2;
 var bgColor = "deepskyblue";
 var fgColor = "red";
@@ -35,28 +35,20 @@ export function drawSphere(sphere) {
 }
 export function redraw(scene, fb) {
   scene.render();
-  var wx = util.canvas.width;
-  var wy = util.canvas.height;
+  var wx = util.wx;
+  var wy = util.wy;
   let imageData = new ImageData(fb, wx, wy);
   util.ctx.putImageData(imageData, 0, 0);
-  //for (var x = 0; x < wx; x++) {
-  //  for (var y = 0; y < wy; y++) {
-  //    if (fb[x + (y * wx)] == 1) {
-  //      util.ctx.fillStyle = fgColor;
-  //    }
-  //    else {
-  //      util.ctx.fillStyle = bgColor;
-  //    }
-  //    util.ctx.fillRect(x, y, 1, 1);
-  //  }
-  //}
 }
 export function makeSphere(scene, fb, pos) {
-  scene.make_sphere(pos.x, pos.y,
-                    Math.random()*maxDepth,
-                    Math.random()*(maxRadius - minRadius) + minRadius);
+  var x = 2 * (pos.x / util.wx) - 1;
+  var y = 2 * (pos.y / util.wy) - 1;
+  var z = Math.random()*maxDepth;
+  var rad = Math.random()*(maxRadius - minRadius) + minRadius;
+  console.log(rad);
+  scene.make_sphere(x, y, z, rad);
   redraw(scene, fb);
-  return scene.sphere_count();
+  return scene.sphere_count() - 1;
 }
 export function moveSphere(scene, fb, idx, pos) {
   scene.move_sphere(idx, pos.x, pos.y);
@@ -67,14 +59,15 @@ export function deleteSphere(scene, fb, idx) {
   redraw(scene, fb);
 }
 export function hitSphere(scene, pos) {
-  for (var i = 0; i < scene.sphere_count(); i++) {
-    var s = scene.sphere(i);
-    var center = s.center();
-    var radius = s.radius();
-    if (center.x() <= pos.x + radius && center.x() >= pos.x - radius &&
-        center.y() <= pos.y + radius && center.y() >= pos.y - radius) {
-      return i;
-    }
-  }
   return false;
+  //for (var i = 0; i < scene.sphere_count(); i++) {
+  //  var s = scene.sphere(i);
+  //  var center = s.center();
+  //  var radius = s.radius();
+  //  if (center.x() <= pos.x + radius && center.x() >= pos.x - radius &&
+  //      center.y() <= pos.y + radius && center.y() >= pos.y - radius) {
+  //    return i;
+  //  }
+  //}
+  //return false;
 }
