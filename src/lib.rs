@@ -29,7 +29,6 @@ pub struct Scene {
   vertical: Point,
   spheres: Vec<Sphere>,
   framebuffer: Vec<u8>,
-  fg_color: Color,
 }
 
 #[wasm_bindgen]
@@ -41,10 +40,9 @@ impl Scene {
     let horizontal = Point::new(4.0, 0.0, 0.0);
     let vertical = Point::new(0.0, 4.0, 0.0);
     let framebuffer = vec![0; (wx*wy*4).into()];
-    let fg_color = Color::new(255, 0, 0, 255);
-    spheres.push(Sphere::new(Point::new(0.0, 0.0, -2.0), 0.5, Color::new(255,255,0,255)));
-    spheres.push(Sphere::new(Point::new(1.0, 0.0, -2.0), 0.5, Color::new(0,255,255,255)));
-    spheres.push(Sphere::new(Point::new(-1.0, 0.0, -2.0), 0.5, Color::new(255,0,255,255)));
+    //spheres.push(Sphere::new(Point::new(0.0, 0.0, -2.0), 0.5, Color::new(255,255,0,255)));
+    //spheres.push(Sphere::new(Point::new(1.0, 0.0, -2.0), 0.5, Color::new(0,255,255,255)));
+    //spheres.push(Sphere::new(Point::new(-1.0, 0.0, -2.0), 0.5, Color::new(255,0,255,255)));
     Scene {
       wx, wy,
       eye,
@@ -53,7 +51,6 @@ impl Scene {
       vertical,
       spheres,
       framebuffer,
-      fg_color,
     }
   }
   fn set_framebuffer(&mut self, x: usize, y: usize, color: Color) {
@@ -63,15 +60,18 @@ impl Scene {
     self.framebuffer[idx + 2] = color.b();
     self.framebuffer[idx + 3] = color.a();
   }
+  fn xy_to_ray(&self, x: f64, y: f64) -> Ray {
+    let u = x / (self.wx as f64);
+    let v = y / (self.wy as f64);
+    let dir = self.top_left.add(
+              self.horizontal.mult(u)).add(
+              self.vertical.mult(v));
+    Ray::new(self.eye, dir)
+  }
   pub fn render(&mut self) {
     for y in 0..self.wy {
       for x in 0..self.wx {
-        let u = (x as f64) / (self.wx as f64);
-        let v = (y as f64) / (self.wy as f64);
-        let dir = self.top_left.add(
-                  self.horizontal.mult(u)).add(
-                  self.vertical.mult(v));
-        let r = Ray::new(self.eye, dir);
+        let r = self.xy_to_ray(x as f64, y as f64);
         let col = match self.color_pixel(r) {
           Some(col) => col,
           None => Scene::bg_color(r),
@@ -91,9 +91,23 @@ impl Scene {
   pub fn delete_sphere(&mut self, idx: usize) {
     self.spheres.remove(idx);
   }
-  //pub fn hit_sphere(&self) -> usize {
-  //  let distances = self.spheres.iter().map(|s| s.intersect(ray));
-  //}
+  pub fn hit_sphere(&self, x: usize, y: usize) -> usize {
+    let ray = self.xy_to_ray(x as f64, y as f64);
+    let distances = self.spheres.iter().map(|s| s.intersect(ray));
+    if distances.clone().all(|d| d.is_none()) {
+      self.spheres.len() + 1
+    } else {
+      //get the index of the closest sphere
+      self.spheres.iter()
+                  .enumerate()
+                  .min_by_key(|(_, s)| {
+                    match s.intersect(ray) {
+                      Some(val) => (val * 100.0) as u64,
+                      None => std::u64::MAX,
+                    }
+                  }).unwrap().0
+    }
+  }
   fn normal_to_color(n: Point) -> Color {
     let m = n.shift(1.0).mult(0.5).mult(255.99);
     Color::new(m.x() as u8, m.z() as u8, m.y() as u8, 255)
