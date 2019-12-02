@@ -1,32 +1,38 @@
 import * as util from './util.js';
 
 const minRadius = 0.1;
-const maxRadius = 0.3;
+const maxRadius = 0.5;
 const minDepth = -5.0;
 const maxDepth = -0.3;
 
 export function redraw(scene, fb) {
   scene.render();
-  let imageData = new ImageData(fb, util.wx, util.wy);
-  util.ctx.putImageData(imageData, 0, 0);
+  util.ctx.putImageData(fb, 0, 0);
 }
 
 function randInRange(min, max) {
   return min + Math.random()*(max - min);
 }
 
+function randColor() {
+  return {
+    r: Math.trunc(randInRange(0, 255)),
+    g: Math.trunc(randInRange(0, 255)),
+    b: Math.trunc(randInRange(0, 255)),
+  }
+}
+
 function posToSceneCoord(pos) {
-  var x = 2 * (pos.x / util.wx) - 1;
-  var y = 2 * (pos.y / util.wy) - 1;
+  var x = 4 * (pos.x / util.wx) - 2;
+  var y = 4 * (pos.y / util.wy) - 2;
   return { x: x, y: y }
 }
 
-//this function doesn't always create spheres where we click
 export function makeSphere(scene, fb, pos) {
   var coord = posToSceneCoord(pos);
-  var z = randInRange(minDepth, maxDepth);
   var rad = randInRange(minRadius, maxRadius);
-  scene.make_sphere(coord.x, coord.y, z, rad);
+  var col = randColor();
+  scene.make_sphere(coord.x, coord.y, rad, col.r, col.g, col.b);
   redraw(scene, fb);
   return scene.sphere_count() - 1;
 }
