@@ -15,20 +15,23 @@ async function run() {
   const wy = util.canvas.height;
   const scene = Scene.new(wx, wy);
   const fbPtr = scene.framebuffer();
-  const framebuffer = new Uint8ClampedArray(memory.buffer, fbPtr, wx*wy*4);
-  glue.redraw(scene, framebuffer);
+  const imageData = new Uint8ClampedArray(memory.buffer, fbPtr, wx*wy*4);
+  const frameBuffer= new ImageData(imageData, util.wx, util.wy);
+  glue.redraw(scene, frameBuffer);
 
   $(document).ready(function() {
     $(canvasSelector).mousedown(
       function(evt) {
         var mousePos = util.getMousePos(evt);
         grabbingSphere = glue.hitSphere(scene, mousePos);
-        if (!grabbingSphere) {
-          grabbingSphere = glue.makeSphere(scene, framebuffer, mousePos);
+        if (grabbingSphere === false) {
+          if (evt.which == 1) {
+            grabbingSphere = glue.makeSphere(scene, frameBuffer, mousePos);
+          }
         }
         else {
           if (evt.which == 2) {
-            glue.deleteSphere(scene, framebuffer, grabbingSphere);
+            glue.deleteSphere(scene, frameBuffer, grabbingSphere);
             grabbingSphere = false;
           }
         }
@@ -36,15 +39,15 @@ async function run() {
     $(canvasSelector).mouseup(
       function(evt) {
         var mousePos = util.getMousePos(evt);
-        if (grabbingSphere && evt.which == 1) {
+        if (grabbingSphere !== false && evt.which == 1) {
           grabbingSphere = false;
         }
       });
     $(canvasSelector).mousemove(
       function(evt) {
-        if (grabbingSphere) {
+        if (grabbingSphere !== false) {
           var mousepos = util.getMousePos(evt);
-          glue.moveSphere(scene, framebuffer, grabbingSphere, mousepos);
+          glue.moveSphere(scene, frameBuffer, grabbingSphere, mousepos);
         }
       });
   });
