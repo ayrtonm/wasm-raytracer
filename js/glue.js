@@ -7,6 +7,10 @@ const maxDepth = -0.3;
 
 export function redraw(scene, fb) {
   scene.render();
+  redisplay(fb);
+}
+
+export function redisplay(fb) {
   util.ctx.putImageData(fb, 0, 0);
 }
 
