@@ -12,10 +12,16 @@ pub struct Color {
   r: u8, g: u8, b: u8, a: u8
 }
 #[derive(Clone, Copy)]
+pub enum Material {
+  Matte,
+  Metal,
+}
+#[derive(Clone, Copy)]
 pub struct Sphere {
   center: Point,
   radius: f64,
   color: Color,
+  material: Material,
   //distancesq: f64,
 }
 
@@ -106,15 +112,24 @@ impl Color {
       a: self.a,
     }
   }
+  pub fn tint(&self, other: &Color) -> Color {
+    Color {
+      r: ((self.r as f64) + (other.r() as f64)) as u8,
+      g: ((self.g as f64) + (other.g() as f64)) as u8,
+      b: ((self.b as f64) + (other.b() as f64)) as u8,
+      a: 255,
+    }
+  }
 }
 
 impl Sphere {
-  pub fn new(center: Point, radius: f64, color: Color) -> Sphere {
+  pub fn new(center: Point, radius: f64, color: Color, material: Material) -> Sphere {
     //FIXME: distancesq's initial value implicitly assumes that the camera (Scene::eye) is at the origin
     Sphere {
       center,
       radius,
       color,
+      material,
       //distancesq: center.norm().powi(2)
     }
   }
@@ -124,6 +139,7 @@ impl Sphere {
   //pub fn center(&self) -> Point { self.center }
   //pub fn radius(&self) -> f64 { self.radius }
   pub fn color(&self) -> Color { self.color }
+  pub fn material(&self) -> Material { self.material }
   //pub fn distancesq(&self) -> f64 { self.distancesq }
   pub fn intersect(&self, r: &Ray) -> Option<f64> {
     let a: f64 = dot(&r.direction(), &r.direction());
@@ -132,7 +148,12 @@ impl Sphere {
     let c: f64 = dot(&dr, &dr) - self.radius.powi(2);
     let discriminant: f64 = b.powi(2) - 4.0*a*c;
     if discriminant > 0.0 {
-      Some(-(b + discriminant.sqrt()) / (a * 2.0))
+      let ret = -(b + discriminant.sqrt()) / (a * 2.0);
+      if ret > 0.0 {
+        Some(ret)
+      } else {
+        None
+      }
     } else {
       None
     }

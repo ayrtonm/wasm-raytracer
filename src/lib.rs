@@ -40,9 +40,9 @@ impl Scene {
     let horizontal = Point::new(4.0, 0.0, 0.0);
     let vertical = Point::new(0.0, 4.0, 0.0);
     let framebuffer = vec![0; (wx*wy*4).into()];
-    spheres.push(Sphere::new(Point::new(0.0, 0.0, -2.0), 0.5, Color::new(255,0,0,255)));
-    spheres.push(Sphere::new(Point::new(1.0, 0.0, -2.0), 0.5, Color::new(0,255,0,255)));
-    spheres.push(Sphere::new(Point::new(-1.0, 0.0, -2.0), 0.5, Color::new(0,0,255,255)));
+    spheres.push(Sphere::new(Point::new(0.0, 0.0, -2.0), 0.5, Color::new(255,0,0,255),Material::Metal));
+    spheres.push(Sphere::new(Point::new(1.0, 0.0, -2.0), 0.5, Color::new(0,255,0,255),Material::Metal));
+    spheres.push(Sphere::new(Point::new(-1.0, 0.0, -2.0), 0.5, Color::new(0,0,255,255),Material::Metal));
     Scene {
       wx, wy,
       eye,
@@ -57,18 +57,21 @@ impl Scene {
     for y in 0..self.wy {
       for x in 0..self.wx {
         let r = self.xy_to_ray(x as u64, y as u64);
-        let col = match self.color_pixel(&r) {
-          Some(col) => col,
-          None => Scene::bg_color(&r),
-        };
+        let col = self.color_pixel(&r, 0);
         self.set_framebuffer(x, y, &col);
       }
     }
   }
-  pub fn make_sphere(&mut self, x: f64, y: f64, radius: f64, r: u8, g: u8, b: u8) {
+  pub fn make_sphere(&mut self, x: f64, y: f64, radius: f64, r: u8, g: u8, b: u8, mat: f64) {
+    let rand_mat = if mat < 0.5 {
+      Material::Matte
+    } else {
+      Material::Metal
+    };
     self.spheres.push(Sphere::new(Point::new(x, y, -2.0),
                                   radius,
-                                  Color::new(r, g, b, 255)));
+                                  Color::new(r, g, b, 255),
+                                  rand_mat));
   }
   //move the sphere idx to x, y while keeping z constant
   //this function is mostly commented out because it's too slow
@@ -151,14 +154,9 @@ impl Scene {
     c.shade(dot(n, &v))
   }
   fn bg_color(ray: &Ray) -> Color {
-    let u = ray.direction().normalize();
-    let t = 0.5*(1.0 - u.y() - u.z());
-    let r = 255.99 * (1.0 - (0.5 * t));
-    let g = 255.99 * (1.0 - (0.3 * t));
-    let b = 255.99 * 1.0;
-    Color::new(r as u8, g as u8, b as u8, 255)
+    Color::new(0,0,0,0)
   }
-  pub fn color_pixel(&self, ray: &Ray) -> Option<Color> {
+  pub fn color_pixel(&self, ray: &Ray, depth: u64) -> Color {
     //if no spheres intersect the ray return the background color
     let no_intersect = self.spheres.iter()
                            .all(|&s| {
@@ -168,7 +166,7 @@ impl Scene {
                              }
                            });
     if no_intersect {
-      None
+      Scene::bg_color(ray)
     } else {
       //get the closest sphere
       let closest = self.spheres.iter()
@@ -180,12 +178,33 @@ impl Scene {
                                 }).unwrap();
       //get the ray parameter `t` at which the sphere and the ray intersect
       let t: f64 = closest.intersect(&ray).unwrap();
-      //get the Point at which the sphere and ray intersect
-      let val = ray.value(t);
-      //get the normal to the surface of the sphere
-      let n = closest.normal(&val);
-      //pick colors based on the direction of this surface normal
-      Some(Scene::normal_to_color(&closest.color(), &n))
+      if t < 10.0 {
+        if depth < 50 {
+          match closest.material() {
+            Material::Matte => {
+              //get the Point at which the sphere and ray intersect
+              let val = ray.value(t);
+              //get the normal to the surface of the sphere
+              let n = closest.normal(&val);
+              //pick colors based on the direction of this surface normal
+              Scene::normal_to_color(&closest.color(), &n)
+            },
+            Material::Metal => {
+              let val = ray.value(t);
+              let n = closest.normal(&val);
+              let v_dot_n = dot(&ray.direction(), &n);
+              let new_dir = ray.direction().sub(n.mult(2.0 * v_dot_n));
+              let new_ray = Ray::new(val, new_dir);
+              let reflected_color = &self.color_pixel(&new_ray, depth + 1);
+              Scene::normal_to_color(&closest.color(), &n).tint(&reflected_color)
+            },
+          }
+        } else {
+          Scene::bg_color(ray)
+        }
+      } else {
+        Scene::bg_color(ray)
+      }
     }
   }
 }
