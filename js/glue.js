@@ -32,7 +32,8 @@ export function makeSphere(scene, fb, pos) {
   var coord = posToSceneCoord(pos);
   var rad = randInRange(minRadius, maxRadius);
   var col = randColor();
-  scene.make_sphere(coord.x, coord.y, rad, col.r, col.g, col.b);
+  var mat = randInRange(0.0, 1.0);
+  scene.make_sphere(coord.x, coord.y, rad, col.r, col.g, col.b, mat);
   redraw(scene, fb);
   return scene.sphere_count() - 1;
 }
