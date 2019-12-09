@@ -14,8 +14,8 @@ function showHelp(pos) {
   pos.y -= winy;
   var textpx = pos.x + 5;
   var textpy = pos.y + 3;
-  util.ctx.fillStyle = "#333333";
-  util.ctx.globalAlpha = 0.3;
+  util.ctx.fillStyle = "#000000";
+  util.ctx.globalAlpha = 0.7;
   util.ctx.beginPath();
   util.ctx.moveTo(pos.x + cornerRadius, pos.y);
   util.ctx.lineTo(pos.x + winx - cornerRadius, pos.y);
@@ -29,7 +29,7 @@ function showHelp(pos) {
   util.ctx.stroke();
   util.ctx.fill();
   util.ctx.globalAlpha = 1;
-  util.ctx.fillStyle = "#000000";
+  util.ctx.fillStyle = "#ffffff";
   util.ctx.fillText("Left click to make and", textpx, textpy + 10);
   util.ctx.fillText("move spheres, middle", textpx, textpy + 20);
   util.ctx.fillText("click to delete", textpx, textpy + 30);
@@ -41,11 +41,10 @@ async function run() {
   const memory = wasm.memory;
 
   //initialize and draw the scene
-  const wx = util.canvas.width;
-  const wy = util.canvas.height;
-  const scene = Scene.new(wx, wy);
+  const scene = Scene.new(util.wx, util.wy);
   const fbPtr = scene.framebuffer();
-  const imageData = new Uint8ClampedArray(memory.buffer, fbPtr, wx*wy*4);
+  const bytesPerPixel = 4;
+  const imageData = new Uint8ClampedArray(memory.buffer, fbPtr, util.wx*util.wy*bytesPerPixel);
   const frameBuffer= new ImageData(imageData, util.wx, util.wy);
   glue.redraw(scene, frameBuffer);
 
@@ -63,6 +62,7 @@ async function run() {
     $(canvasSelector).mousedown(
       function(evt) {
         showingHelp = false;
+        glue.redisplay(frameBuffer);
         var mousePos = util.getMousePos(evt);
         grabbingSphere = glue.hitSphere(scene, mousePos);
         if (grabbingSphere === false) {

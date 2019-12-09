@@ -1,10 +1,5 @@
 import * as util from './util.js';
 
-const minRadius = 0.1;
-const maxRadius = 0.5;
-const minDepth = -5.0;
-const maxDepth = -0.3;
-
 export function redraw(scene, fb) {
   scene.render();
   redisplay(fb);
@@ -14,30 +9,15 @@ export function redisplay(fb) {
   util.ctx.putImageData(fb, 0, 0);
 }
 
-function randInRange(min, max) {
-  return min + Math.random()*(max - min);
-}
-
-function randColor() {
-  return {
-    r: Math.trunc(randInRange(0, 255)),
-    g: Math.trunc(randInRange(0, 255)),
-    b: Math.trunc(randInRange(0, 255)),
-  }
-}
-
 function posToSceneCoord(pos) {
-  var x = 4 * (pos.x / util.wx) - 2;
-  var y = 4 * (pos.y / util.wy) - 2;
+  var x = (pos.x / util.wx);
+  var y = (pos.y / util.wy);
   return { x: x, y: y }
 }
 
 export function makeSphere(scene, fb, pos) {
   var coord = posToSceneCoord(pos);
-  var rad = randInRange(minRadius, maxRadius);
-  var col = randColor();
-  var mat = randInRange(0.0, 1.0);
-  scene.make_sphere(coord.x, coord.y, rad, col.r, col.g, col.b, mat);
+  scene.make_sphere(coord.x, coord.y);
   redraw(scene, fb);
   return scene.sphere_count() - 1;
 }
@@ -54,8 +34,9 @@ export function deleteSphere(scene, fb, idx) {
 }
 
 export function hitSphere(scene, pos) {
-  var maybeIdx = scene.hit_sphere(pos.x, pos.y);
-  if (maybeIdx > scene.sphere_count()) {
+  var coord = posToSceneCoord(pos);
+  var maybeIdx = scene.hit_sphere(coord.x, coord.y);
+  if (maybeIdx >= scene.sphere_count()) {
     return false;
   }
   return maybeIdx;
